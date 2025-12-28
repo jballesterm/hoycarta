@@ -1,4 +1,4 @@
-name: CI/CD PWA Build
+name: CI/CD PWA Build & Deploy
 
 on:
   push:
@@ -25,8 +25,10 @@ jobs:
       - name: Build PWA
         run: npm run build
 
-      - name: Upload production artifacts
-        uses: actions/upload-artifact@v4
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: pwa-build
-          path: build/
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build # Reemplaza 'build' por el nombre de tu carpeta compilada (ej. 'dist')
+          publish_branch: gh-pages # El nombre de la rama de despliegue
+          destination: . # Despliega en la raíz de la rama gh-pages
