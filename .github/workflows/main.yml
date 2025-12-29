@@ -16,20 +16,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # Hemos quitado la linea de "cache" que daba el error anterior
 
       - name: 3. Cocinar la web (Build)
         run: |
           npm install
           npm run build
 
-      - name: 4. Enviar plato terminado a Plesk (SFTP)
+      - name: 4. Enviar a Plesk (SFTP con Password)
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
+          password: ${{ secrets.SFTP_PASSWORD }} # IMPORTANTE: Revisa que el secreto se llame exactamente así
           port: 22
           source: "dist/*"
-          target: "/var/www/vhosts/hoycarta.es/httpdocs/"
+          # Al ser chrooted, intentamos la ruta directa a httpdocs
+          target: "httpdocs/" 
           strip_components: 1
+          overwrite: true
