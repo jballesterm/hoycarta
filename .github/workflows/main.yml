@@ -1,4 +1,4 @@
-name: Deploy via SFTP
+name: Deploy HoyCarta via SFTP
 
 on:
   push:
@@ -6,24 +6,29 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install and Build
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Project
         run: |
           npm install
           npm run build
 
       - name: Deploy via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        uses: appleboy/scp-action@master
         with:
+          host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
-          server: ${{ secrets.SFTP_SERVER }}
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
-          local_path: './dist/*'
-          remote_path: '/httpdocs/'
-          sftp_only: true
+          source: "dist/*,sw.js,manifest.json"
+          target: "/var/www/vhosts/hoycarta.es/httpdocs/"
+          strip_components: 1
