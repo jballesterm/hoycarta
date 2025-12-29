@@ -1,40 +1,35 @@
-name: Deploy HoyCarta via SFTP
+name: Publicar mi Web
 
 on:
   push:
     branches:
-      - main  # Se activará cada vez que hagas push a la rama principal
+      - main
 
 jobs:
-  build-and-deploy:
+  cocinar-y-subir:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del código
+      - name: 1. Descargar mi codigo
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
+      - name: 2. Preparar el Cocinero (Node)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # Hemos quitado la linea de "cache" que daba el error anterior
 
-      - name: Instalar y Compilar
+      - name: 3. Cocinar la web (Build)
         run: |
           npm install
-          npm run build  # Esto genera la carpeta 'dist' con index.html, sw.js y manifest.json
+          npm run build
 
-      - name: Desplegar archivos por SFTP
+      - name: 4. Enviar plato terminado a Plesk (SFTP)
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
-          # 'source' indica qué archivos enviar. 'dist/*' envía el contenido de la carpeta de compilación.
-          # También incluimos sw.js y manifest.json si están en la raíz para la PWA.
-          source: "dist/*,sw.js,manifest.json"
+          source: "dist/*"
           target: "/var/www/vhosts/hoycarta.es/httpdocs/"
-          strip_components: 1  # Quita el prefijo 'dist/' para que los archivos caigan directos en httpdocs
-          overwrite: true
-          # Esta opción es clave para evitar errores de conexión inicial que Notepad++ acepta manualmente
-          rm: false
+          strip_components: 1
