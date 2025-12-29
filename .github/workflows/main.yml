@@ -1,4 +1,4 @@
-name: Publicar mi Web
+name: Publicar HoyCarta PWA
 
 on:
   push:
@@ -9,28 +9,30 @@ jobs:
   cocinar-y-subir:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Descargar mi codigo
+      - name: 1. Descargar código
         uses: actions/checkout@v4
 
-      - name: 2. Preparar el Cocinero (Node)
+      - name: 2. Preparar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # No usamos cache para evitar errores si falta el package-lock.json
 
-      - name: 3. Cocinar la web (Build)
+      - name: 3. Compilar Proyecto (Vite)
         run: |
           npm install
           npm run build
 
-      - name: 4. Enviar a Plesk (SFTP con Password)
+      - name: 4. Enviar a Plesk via SFTP
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }} # IMPORTANTE: Revisa que el secreto se llame exactamente así
+          password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
-          source: "dist/*"
-          # Al ser chrooted, intentamos la ruta directa a httpdocs
-          target: "httpdocs/" 
+          # Al poner dist/ sin asterisco, se copia la carpeta y sus subcarpetas (assets)
+          source: "dist/"
+          # Target relativo porque tu usuario 'jahoy' está en modo chrooted
+          target: "httpdocs/"
           strip_components: 1
           overwrite: true
