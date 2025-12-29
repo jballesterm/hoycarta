@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build and Secure SFTP Transfer
+    name: Production Build and Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -31,10 +31,11 @@ jobs:
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
-          # Se transfiere el contenido de dist/ de forma recursiva para incluir la carpeta assets
+          # Se asegura la captura de toda la estructura de la carpeta dist/
           source: "dist/*"
-          # Se utiliza ruta relativa por la restricción chrooted del usuario jahoy
+          # Ruta relativa obligatoria para entorno chrooted
           target: "httpdocs/"
           strip_components: 1
           overwrite: true
+          # Se mantiene rm: false para proteger el archivo .htaccess existente
           rm: false
