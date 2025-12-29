@@ -1,4 +1,4 @@
-name: Publicar HoyCarta PWA
+name: CI/CD Deployment - HoyCarta PWA
 
 on:
   push:
@@ -6,33 +6,46 @@ on:
       - main
 
 jobs:
-  cocinar-y-subir:
+  build-and-deploy:
+    name: Build and Secure SFTP Transfer
     runs-on: ubuntu-latest
+
     steps:
-      - name: 1. Descargar código
+      # 1. Preparación del entorno de ejecución
+      - name: Checkout Source Code
+        description: Descarga el repositorio en el entorno virtual de GitHub Actions.
         uses: actions/checkout@v4
 
-      - name: 2. Preparar Node.js
+      # 2. Gestión de dependencias y entorno de ejecución
+      - name: Setup Node.js Environment
+        description: Instala la versión estable de Node.js necesaria para la compilación de Vite.
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # No usamos cache para evitar errores si falta el package-lock.json
 
-      - name: 3. Compilar Proyecto (Vite)
+      # 3. Proceso de transformación y compilación
+      - name: Install Dependencies and Execute Build
+        description: Instala módulos de Node y ejecuta el script de producción para generar la carpeta /dist.
         run: |
           npm install
           npm run build
 
-      - name: 4. Enviar a Plesk via SFTP
+      # 4. Despliegue de activos al servidor de producción
+      - name: Synchronize Files via SFTP
+        description: Transfiere el contenido de /dist al servidor Plesk usando credenciales de sistema.
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
-          # Al poner dist/ sin asterisco, se copia la carpeta y sus subcarpetas (assets)
-          source: "dist/"
-          # Target relativo porque tu usuario 'jahoy' está en modo chrooted
+          # 'source' apunta exclusivamente a la carpeta de salida de la compilación.
+          # Esto evita la subida de archivos fuente (.tsx, .ts, etc.) detectados anteriormente.
+          source: "dist/*"
+          # 'target' utiliza ruta relativa por la restricción de entorno /bin/bash (chrooted).
           target: "httpdocs/"
+          # 'strip_components: 1' elimina el prefijo 'dist/' para que el contenido se deposite en la raíz de httpdocs.
           strip_components: 1
           overwrite: true
+          # Se mantiene rm: false para no interferir con el archivo .htaccess persistente.
+          rm: false
