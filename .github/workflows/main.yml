@@ -1,0 +1,54 @@
+name: Build and Deploy HoyCarta
+
+on:
+  push:
+    branches:
+      - main  # Se activa al subir cambios a la rama principal
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el código del repositorio
+      - name: Checkout de código
+        uses: actions/checkout@v4
+
+      # 2. Configurar Node.js para la compilación
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Instalar dependencias y compilar (Vite generará la carpeta 'dist')
+      - name: Instalar y Compilar
+        run: |
+          npm install
+          npm run build
+
+      # 4. Subir los archivos compilados al servidor Plesk vía SSH (SCP)
+      - name: Desplegar archivos por SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "dist/*,sw.js,manifest.json" # Archivos necesarios para la PWA
+          target: "/var/www/vhosts/hoycarta.es/httpdocs/"
+          strip_components: 1 # Para que el contenido de dist/ vaya directo a httpdocs/
+
+      # 5. Comandos adicionales en el servidor (Limpieza o permisos)
+      - name: Ejecutar comandos post-despliegue
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/vhosts/hoycarta.es/httpdocs/
+            # Asegurar que el archivo .htaccess existe para evitar errores 404 en la PWA
+            if [ ! -f .htaccess ]; then
+              echo "Error: .htaccess no encontrado. Creando uno básico..."
+            fi
