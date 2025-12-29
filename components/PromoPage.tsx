@@ -84,13 +84,13 @@ const PromoPage: React.FC<PromoPageProps> = ({ onBack }) => {
                   <div className="flex items-center gap-4">
                     <div className="text-4xl font-bold text-orange-500">3</div>
                     <div className="text-left">
-                      <p className="text-xs uppercase font-bold tracking-widest text-slate-400">Plazas disponibles</p>
-                      <p className="text-sm font-medium">Solo para los primeros locales</p>
+                      <p className="text-xs uppercase font-bold tracking-widest text-orange-500">Próximamente</p>
+                      <p className="text-sm font-bold">En breve 3 plazas disponibles</p>
                     </div>
                   </div>
                 </div>
                 <h2 className="text-2xl font-bold mb-4">¿Quieres ser uno de ellos?</h2>
-                <p className="text-slate-400 text-sm">Completa el formulario y te confirmaremos si entras en la promoción en menos de 1 hora.</p>
+                <p className="text-slate-400 text-sm">Completa el formulario y te confirmaremos si entras en la promoción en cuanto se abran las plazas.</p>
               </div>
 
               <form className="space-y-5">
@@ -109,11 +109,11 @@ const PromoPage: React.FC<PromoPageProps> = ({ onBack }) => {
                 
                 <button type="button" className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 rounded-2xl mt-6 shadow-xl shadow-orange-600/20 flex items-center justify-center gap-2 transition-all active:scale-95">
                   <Sparkles className="h-5 w-5" />
-                  RESERVAR MI PLAZA GRATIS
+                  AVÍSAME CUANDO ESTÉN DISPONIBLES
                 </button>
                 
                 <p className="text-center text-[10px] text-slate-500 mt-4">
-                  Al enviar este formulario, confirmas que eres el propietario o gestor del local. Oferta válida hasta completar las 3 plazas.
+                  Al enviar este formulario, te incluiremos en la lista de espera prioritaria. Oferta válida hasta completar las 3 plazas una vez se abra el registro.
                 </p>
               </form>
             </div>
