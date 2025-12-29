@@ -3,32 +3,38 @@ name: Deploy HoyCarta via SFTP
 on:
   push:
     branches:
-      - main
+      - main  # Se activará cada vez que hagas push a la rama principal
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Build Project
+      - name: Instalar y Compilar
         run: |
           npm install
-          npm run build
+          npm run build  # Esto genera la carpeta 'dist' con index.html, sw.js y manifest.json
 
-      - name: Deploy via SFTP
+      - name: Desplegar archivos por SFTP
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
+          # 'source' indica qué archivos enviar. 'dist/*' envía el contenido de la carpeta de compilación.
+          # También incluimos sw.js y manifest.json si están en la raíz para la PWA.
           source: "dist/*,sw.js,manifest.json"
           target: "/var/www/vhosts/hoycarta.es/httpdocs/"
-          strip_components: 1
+          strip_components: 1  # Quita el prefijo 'dist/' para que los archivos caigan directos en httpdocs
+          overwrite: true
+          # Esta opción es clave para evitar errores de conexión inicial que Notepad++ acepta manualmente
+          rm: false
