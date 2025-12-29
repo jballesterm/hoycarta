@@ -7,29 +7,25 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Production Build and Deploy
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js Environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install and Build
+        run: |
+          npm install
+          npm run build
 
-      - name: Execute Build
-        run: npm run build
+      - name: Verify Assets
+        run: ls -R dist/assets/
 
-      # Este paso nos permite confirmar en los logs de GitHub si los archivos se crearon
-      - name: Verify Build Output
-        run: ls -R dist/
-
-      - name: Synchronize Files via SFTP
+      - name: Deploy to Plesk
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
