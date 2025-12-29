@@ -11,41 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Preparación del entorno de ejecución
       - name: Checkout Source Code
-        description: Descarga el repositorio en el entorno virtual de GitHub Actions.
         uses: actions/checkout@v4
 
-      # 2. Gestión de dependencias y entorno de ejecución
       - name: Setup Node.js Environment
-        description: Instala la versión estable de Node.js necesaria para la compilación de Vite.
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 3. Proceso de transformación y compilación
       - name: Install Dependencies and Execute Build
-        description: Instala módulos de Node y ejecuta el script de producción para generar la carpeta /dist.
         run: |
           npm install
           npm run build
 
-      # 4. Despliegue de activos al servidor de producción
       - name: Synchronize Files via SFTP
-        description: Transfiere el contenido de /dist al servidor Plesk usando credenciales de sistema.
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_SERVER }}
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
-          # 'source' apunta exclusivamente a la carpeta de salida de la compilación.
-          # Esto evita la subida de archivos fuente (.tsx, .ts, etc.) detectados anteriormente.
+          # Se transfiere el contenido de dist/ de forma recursiva para incluir la carpeta assets
           source: "dist/*"
-          # 'target' utiliza ruta relativa por la restricción de entorno /bin/bash (chrooted).
+          # Se utiliza ruta relativa por la restricción chrooted del usuario jahoy
           target: "httpdocs/"
-          # 'strip_components: 1' elimina el prefijo 'dist/' para que el contenido se deposite en la raíz de httpdocs.
           strip_components: 1
           overwrite: true
-          # Se mantiene rm: false para no interferir con el archivo .htaccess persistente.
           rm: false
